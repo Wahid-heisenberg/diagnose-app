@@ -21,8 +21,8 @@ class DiagnosisViewSet(viewsets.ViewSet):
         print(serializer)
         if serializer.is_valid():
             symptoms = serializer.validated_data['symptoms']
-            possible_diseases = diagnose_disease(symptoms)
-            return Response({'possible_diseases': possible_diseases})
+            possible_disease = diagnose_disease(symptoms)
+            return Response({'possible_disease': possible_disease})
         else:
             return Response(serializer.errors, status=400)
 
