@@ -6,6 +6,7 @@ from . import views
 router = routers.DefaultRouter()
 router.register(r'diseases', views.DiseaseViewSet)
 router.register(r'symptoms', views.SymptomViewSet)
+router.register(r'diagnose', views.DiagnosisViewSet, basename='diagnose')
 
 
 # Wire up our API using automatic URL routing.

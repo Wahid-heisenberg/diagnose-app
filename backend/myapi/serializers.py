@@ -4,6 +4,9 @@ from rest_framework import serializers
 from .models import Disease, Symptom
 
 
+class DiagnosisRequestSerializer(serializers.Serializer):
+    symptoms = serializers.CharField()
+
 class SymptomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Symptom
