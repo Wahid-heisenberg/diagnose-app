@@ -4,9 +4,20 @@
 
 :root {
   --max-width: 1140px;
+  background-color: #FAFAFA;
 }
 
 .c-container {
   max-width: min(90%, var(--max-width));
   margin-inline: auto;
+}
+
+.balance-25 {
+  max-inline-size: 20ch;
+  text-wrap: balance;
+}
+
+.balance-30 {
+  max-inline-size: 60ch;
+  /* text-wrap: balance; */
 }
