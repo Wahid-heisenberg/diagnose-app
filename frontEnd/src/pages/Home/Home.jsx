@@ -7,6 +7,7 @@ import Shape from "@/icons/shape.svg?react";
 import Heart from "@/icons/heart.svg?react";
 import Stetoschope from "@/icons/stethoscope.svg?react";
 import Case from "@/icons/case.svg?react";
+import { Footer } from "@/components/website/Footer";
 
 const Home = () => {
   const tools = [
@@ -27,6 +28,25 @@ const Home = () => {
     },
   ];
 
+  const stats = [
+    {
+      number: "15K",
+      description: "Happy Customers",
+    },
+    {
+      number: "150k",
+      description: "Monthly Visitors",
+    },
+    {
+      number: "15",
+      description: "Countries WorldWide",
+    },
+    {
+      number: "100+",
+      description: "Top Partners",
+    },
+  ];
+
   return (
     <>
       <main className="mt-36 relative flex items-center justify-start gap-4 ove">
@@ -42,7 +62,7 @@ const Home = () => {
             </p>
             <div className="flex items-center gap-2 pt-4">
               <Button
-                to="/"
+                to="/diagnostic"
                 variant="primary"
                 className="text-white py-3 px-6 text-2xl "
               >
@@ -75,15 +95,31 @@ const Home = () => {
       <section className="-translate-y-[50px]">
         <div className="c-container grid grid-cols-3 gap-20 ">
           {tools.map((tool, index) => (
-            <div key={index} className="bg-white flex flex-col items-start gap-4 py-5 pl-8 pr-12 shadow-lg " >
-              <div className="bg-bgCard p-5 rounded-[50%] flex items-center justify-center" >{tool.icon}</div>
-              <h1 className="font-bold text-text py-1" > {tool.title} </h1>
-              <div className="w-16 h-1 bg-bgCard  " > </div>
-              <p className="text-textLight font-light" >{tool.text} </p>
-
+            <div
+              key={index}
+              className="bg-white flex flex-col items-start gap-4 py-5 pl-8 pr-12 shadow-lg cursor-pointer hover:"
+            >
+              <div className="bg-bgCard p-5 rounded-[50%] flex items-center justify-center">
+                {tool.icon}
+              </div>
+              <h1 className="font-bold text-text py-1"> {tool.title} </h1>
+              <div className="w-16 h-1 bg-bgCard  "> </div>
+              <p className="text-textLight font-light">{tool.text} </p>
             </div>
           ))}{" "}
         </div>
+      </section>
+
+      <section className="bg-white ">
+        <div className="c-container flex items-center justify-between px-12 py-24">
+          {stats.map((stat, index) => (
+            <div className="flex flex-col items-center justify-center gap-2">
+              <h3 className="text-primary font-bold text-5xl">{stat.number}</h3>
+              <h4 className="text-text font-bold" > {stat.description}</h4>
+            </div>
+          ))}
+        </div>
+        <Footer/>
       </section>
     </>
   );
