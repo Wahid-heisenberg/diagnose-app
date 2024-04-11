@@ -30,7 +30,7 @@ def diagnose_disease(symptoms_str):
     for disease in Disease.objects.all():
         score = sum(1 for symptom in symptoms if kb.ask(expr("HasSymptom('{}', '{}')".format(disease, symptom))))
         disease_scores[disease] = score
-    
+    print(disease_scores)
 
     # Find the disease with the highest score (most accurate match)
     most_accurate_disease_id = max(disease_scores, key=disease_scores.get)
