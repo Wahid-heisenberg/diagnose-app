@@ -5,6 +5,7 @@ class Disease(models.Model):
     description = models.TextField()
     treatments = models.TextField()
     symptoms = models.ManyToManyField("Symptom", related_name="diseases")
+    
 
     def __str__(self):
         return self.name
