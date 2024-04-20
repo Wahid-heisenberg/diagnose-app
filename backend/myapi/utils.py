@@ -11,14 +11,13 @@ working_memory = []
 def populate_kb():
     global kb_rules
     
-
     # Add all the symptoms to the knowledge base
     for symptom in Symptom.objects.all():
         working_memory.append(expr(f"Symptom('{symptom.name}')"))
 
     # Add all the diseases to the knowledge base and create rules
     for disease in Disease.objects.all():
-        working_memory.append(expr(f"Disease('{disease.name}')"))
+        # working_memory.append(expr(f"Disease('{disease.name}')"))
         # Create rules for each disease
         rule_antecedent = []
         for symptom in disease.symptoms.all():
@@ -32,11 +31,11 @@ def populate_kb():
 
 # Function to perform backward chaining
 
-from collections import defaultdict
 
 def backward_chaining(hypothesis):
     agenda = deque([hypothesis])
     visited = set()
+    diagnosed_diseases = []
 
     while agenda:
         current_hypothesis = agenda.popleft()
@@ -52,13 +51,16 @@ def backward_chaining(hypothesis):
                 antecedent, consequent = rule.args
                 if consequent == current_hypothesis:
                     working_memory.append(expr(consequent))
-                    print(f"Added to Working Memory: {consequent}")
+                    # print(f"Added to Working Memory: {consequent}")
+                    diagnosed_diseases.append(consequent)  # Add diagnosed disease
                 else:
                     for atom in antecedent.args:
                         if expr(atom) not in working_memory and expr(atom) not in agenda:
                             agenda.append(expr(atom))
-            else:
-                print("Invalid rule format")
+
+    return diagnosed_diseases
+
+
 
 
 
@@ -77,15 +79,18 @@ def diagnose_disease(symptoms_str):
     # Perform backward chaining for each disease
     diagnosed_diseases = []
     for disease in Disease.objects.all():
-        print(backward_chaining(expr(f"Disease('{disease.name}')")))
-        if expr(f"Disease('{disease.name}')") in working_memory:
+        if backward_chaining(expr(f"Disease('{disease.name}')")):
             diagnosed_diseases.append(disease)
-            # print(f"Based on the symptoms provided, the potential illness is {disease.name}")
-
-    # If multiple diseases are diagnosed, return the one with the most symptoms
-    if diagnosed_diseases:
-        most_accurate_disease = max(diagnosed_diseases, key=lambda d: len(d.symptoms.all()))
-        return str(most_accurate_disease.name)
+    print(" Diagnosed Diseases:")
+    print(  diagnosed_diseases)
+    for disease in diagnosed_diseases:
+        Disease.objects.get(name=disease.name).symptoms.all()
+        common_symptoms = set(symptoms).intersection(set([symptom.name for symptom in Disease.objects.get(name=disease.name).symptoms.all()]))
+        print(f"Common Symptoms for {disease.name}: {common_symptoms}")
+        #return the disease with the maximum number of common symptoms
+    max_common_symptoms = max(diagnosed_diseases, key=lambda disease: len(set(symptoms).intersection(set([symptom.name for symptom in Disease.objects.get(name=disease.name).symptoms.all()]))) )
+    if max_common_symptoms:
+        return max_common_symptoms.name    
     else:
         return "No disease diagnosed."
 
@@ -106,11 +111,11 @@ result1 = diagnose_disease(symptoms1)
 print("Test Case 1 Result:", result1)  # Expected: Common cold or similar
 
 # Test Case 2: Flu
-# symptoms2 = "Fever,Headache,Cough,Fatigue,Muscle aches"
-# result2 = diagnose_disease(symptoms2)
-# print("Test Case 2 Result:", result2)  # Expected: Flu or similar
+symptoms2 = "Runny nose,Sneezing,Cough"
+result2 = diagnose_disease(symptoms2)
+print("Test Case 2 Result:", result2)  # Expected: Flu or similar
 
 # # Test Case 3: No disease
-# symptoms3 = "Fever,Fatigue"
-# result3 = diagnose_disease(symptoms3)
-# print("Test Case 3 Result:", result3) 
+symptoms3 = "Fever,Fatigue"
+result3 = diagnose_disease(symptoms3)
+print("Test Case 3 Result:", result3) 
