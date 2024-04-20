@@ -1,13 +1,12 @@
 from aima3.utils import expr
 from myapi.models import Disease, Symptom
-
+from collections import deque
 # Define the knowledge base rules
 kb_rules = []
 
 # Initialize the working memory
 working_memory = []
 
-# Function to populate the knowledge base
 # Function to populate the knowledge base
 def populate_kb():
     global kb_rules
@@ -19,6 +18,7 @@ def populate_kb():
 
     # Add all the diseases to the knowledge base and create rules
     for disease in Disease.objects.all():
+        working_memory.append(expr(f"Disease('{disease.name}')"))
         # Create rules for each disease
         rule_antecedent = []
         for symptom in disease.symptoms.all():
@@ -26,44 +26,39 @@ def populate_kb():
 
         antecedent_expression = '&'.join(rule_antecedent)  # Combine antecedent atoms with '&'
         rule_consequent = f"Disease('{disease.name}')"
-        rule = expr(f"({antecedent_expression}) >> {rule_consequent}")  # Construct rule
+        rule = expr(f"({antecedent_expression}) ==> {rule_consequent}")  # Construct rule
         kb_rules.append(rule)
 
 
-
 # Function to perform backward chaining
+
+from collections import defaultdict
+
 def backward_chaining(hypothesis):
-    agenda = [hypothesis]
-    
+    agenda = deque([hypothesis])
+    visited = set()
+
     while agenda:
-        current_hypothesis = agenda.pop(0)
-        if current_hypothesis in working_memory:
-            # If the current hypothesis is already in working memory, skip it
+        current_hypothesis = agenda.popleft()
+
+        if current_hypothesis in working_memory or current_hypothesis in visited:
+            # If the current hypothesis is already in working memory or visited, skip it
             continue
+
+        visited.add(current_hypothesis)
+
         for rule in kb_rules:
-            # Iterate over each rule in the knowledge base
-            if rule.op == ">>":
-                # If the rule is of the form antecedent >> consequent
+            if rule.op == "==>" and len(rule.args) == 2:  # Check if the rule format is valid
                 antecedent, consequent = rule.args
                 if consequent == current_hypothesis:
-                    # If the consequent of the rule matches the current hypothesis
-                    if all(expr(atom) in working_memory for atom in antecedent.args):
-                        # If all antecedents are present in working memory, add consequent to working memory
-                        working_memory.append(consequent)
-                        # Print diagnostic information
-                        print(f"Based on the rule: {rule}, the potential illness is {consequent}")
-                        # No need to continue checking other rules, break out of the loop
-                        break
-                    else:
-                        # If not all antecedents are present, add them to the agenda
-                        for atom in antecedent.args:
-                            if expr(atom) not in working_memory:
-                                agenda.append(expr(atom))
+                    working_memory.append(expr(consequent))
+                    print(f"Added to Working Memory: {consequent}")
+                else:
+                    for atom in antecedent.args:
+                        if expr(atom) not in working_memory and expr(atom) not in agenda:
+                            agenda.append(expr(atom))
             else:
-                # Invalid rule format
                 print("Invalid rule format")
-
-
 
 
 
@@ -82,7 +77,7 @@ def diagnose_disease(symptoms_str):
     # Perform backward chaining for each disease
     diagnosed_diseases = []
     for disease in Disease.objects.all():
-        backward_chaining(expr(f"Disease('{disease.name}')"))
+        print(backward_chaining(expr(f"Disease('{disease.name}')")))
         if expr(f"Disease('{disease.name}')") in working_memory:
             diagnosed_diseases.append(disease)
             # print(f"Based on the symptoms provided, the potential illness is {disease.name}")
@@ -99,23 +94,23 @@ populate_kb()
 def showrules():
     for rule in kb_rules:
         antecedent, consequent = rule.args
-        print( antecedent, "  ", consequent)
+        print( antecedent, " ==> ", consequent)
 # showrules()
 def showworkingmemory():
     for atom in working_memory:
         print( "-", atom)
 # showworkingmemory()
 
-symptoms1 = "Fever,Cough,Runny nose,Sore throat"
+symptoms1 = "Fever,Headache,Cough,Fatigue,Muscle aches,Sore throa,Runny nose"
 result1 = diagnose_disease(symptoms1)
 print("Test Case 1 Result:", result1)  # Expected: Common cold or similar
 
 # Test Case 2: Flu
-symptoms2 = "Fever,Headache,Cough,Fatigue,Muscle aches"
-result2 = diagnose_disease(symptoms2)
-print("Test Case 2 Result:", result2)  # Expected: Flu or similar
+# symptoms2 = "Fever,Headache,Cough,Fatigue,Muscle aches"
+# result2 = diagnose_disease(symptoms2)
+# print("Test Case 2 Result:", result2)  # Expected: Flu or similar
 
-# Test Case 3: No disease
-symptoms3 = "Fever,Fatigue"
-result3 = diagnose_disease(symptoms3)
-print("Test Case 3 Result:", result3) 
+# # Test Case 3: No disease
+# symptoms3 = "Fever,Fatigue"
+# result3 = diagnose_disease(symptoms3)
+# print("Test Case 3 Result:", result3) 
